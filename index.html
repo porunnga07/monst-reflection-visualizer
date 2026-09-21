@@ -18,6 +18,8 @@ canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-heigh
 .stepBtn{min-height:30px;width:32px;padding:0;border-radius:8px;font-size:18px;line-height:1}.fineBtn{font-size:11px;font-weight:800}
 .cornerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.angleRow{grid-template-columns:46px 42px 48px 1fr 56px 48px 42px}.angleRow .stepBtn{width:100%;font-size:11px}
 button.corner{border-color:#7c5d3b;background:#3a2b1c}
+.positionRow{grid-template-columns:46px minmax(0,1fr) 64px}
+.positionRow input[type=range]{min-width:0}
 input[type=range]{width:100%;margin:0}input[type=number]{width:100%;padding:5px 3px;background:#091323;color:var(--text);border:1px solid #314565;border-radius:8px;font-size:13px;text-align:center}
 .stepper{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:3px 0 0 46px}.stepper button{min-height:30px;font-size:17px;line-height:1;padding:2px 8px}
 .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}
@@ -35,6 +37,7 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
  .controls{flex:0 0 auto;padding:6px 8px;border-radius:12px}
  .section{padding:4px 0}.head b{font-size:12px}.angleVal{font-size:18px}
  .row{grid-template-columns:34px 29px 1fr 46px 29px;margin:2px 0;gap:3px}.row label{font-size:11px}
+ .positionRow{grid-template-columns:28px minmax(0,1fr) 52px}
  .stepBtn{width:29px;min-height:27px;font-size:17px}.cornerGrid{gap:3px;margin-top:3px}.angleRow{grid-template-columns:30px 36px 43px 1fr 43px 43px 36px}.angleRow .stepBtn{width:100%;font-size:9px}
  .stepper{margin-left:38px;gap:3px}.stepper button{min-height:27px;font-size:16px}
  input[type=number]{padding:3px 2px;font-size:12px}
@@ -51,8 +54,8 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
   <div class="controls">
     <div class="section">
       <div class="head"><b>打ち出し角度</b><span class="angleVal"><span id="angleText">45.0</span>°</span></div>
-      <div class="row angleRow"><label>角度</label><button class="stepBtn" data-step="angle" data-delta="-1">−1°</button><button class="stepBtn fineBtn" data-step="angle" data-delta="-0.1">−0.1°</button><input id="angle" type="range" min="0" max="360" step="0.1" value="45"><input id="angleN" type="number" min="0" max="360" step="0.1" value="45"><button class="stepBtn fineBtn" data-step="angle" data-delta="0.1">＋0.1°</button><button class="stepBtn" data-step="angle" data-delta="1">＋1°</button></div>
-      <div class="stepper"><button data-step="angle" data-delta="-1">− 1°</button><button data-step="angle" data-delta="1">＋ 1°</button></div>
+      <div class="row angleRow"><span></span><button class="stepBtn" data-step="angle" data-delta="-1">−1°</button><button class="stepBtn fineBtn" data-step="angle" data-delta="-0.1">−0.1°</button><input id="angle" type="range" min="0" max="360" step="0.1" value="45"><input id="angleN" type="number" min="0" max="360" step="0.1" value="45"><button class="stepBtn fineBtn" data-step="angle" data-delta="0.1">＋0.1°</button><button class="stepBtn" data-step="angle" data-delta="1">＋1°</button></div>
+      
       <div class="quick">
         <button class="diag" data-diag="UR">対角 ↗</button><button class="diag" data-diag="UL">対角 ↖</button>
         <button class="diag" data-diag="DL">対角 ↙</button><button class="diag" data-diag="DR">対角 ↘</button>
@@ -65,16 +68,16 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
     </div>
     <div class="section">
       <div class="head"><b>初期位置</b><span class="pills"><span class="pill">x=<span id="xText">50</span></span><span class="pill">y=<span id="yText">50</span></span></span></div>
-      <div class="row"><label>x</label><input id="x" type="range" min="0" max="100" step="1" value="50"><input id="xN" type="number" min="0" max="100" step="1" value="50"></div>
+      <div class="row positionRow"><label>x</label><input id="x" type="range" min="0" max="100" step="1" value="50"><input id="xN" type="number" min="0" max="100" step="1" value="50"></div>
       <div class="stepper"><button data-step="x" data-delta="-1">− 1</button><button data-step="x" data-delta="1">＋ 1</button></div>
-      <div class="row"><label>y</label><input id="y" type="range" min="0" max="100" step="1" value="50"><input id="yN" type="number" min="0" max="100" step="1" value="50"></div>
+      <div class="row positionRow"><label>y</label><input id="y" type="range" min="0" max="100" step="1" value="50"><input id="yN" type="number" min="0" max="100" step="1" value="50"></div>
       <div class="stepper"><button data-step="y" data-delta="-1">− 1</button><button data-step="y" data-delta="1">＋ 1</button></div>
       <p class="help">ステージを直接タップ／ドラッグしても初期位置を変更できます。</p>
     </div>
     <div class="section">
       <div class="row"><label>反射</label><button class="stepBtn" data-step="b" data-delta="-1">−</button><input id="b" type="range" min="1" max="50" step="1" value="10"><input id="bN" type="number" min="1" max="50" step="1" value="10"><button class="stepBtn" data-step="b" data-delta="1">＋</button></div>
     </div>
-    <div class="stepper"><button data-step="b" data-delta="-1">− 1回</button><button data-step="b" data-delta="1">＋ 1回</button></div>
+    
   </div>
 </div>
 </div>
@@ -117,18 +120,6 @@ document.querySelectorAll('[data-diag]').forEach(btn=>btn.onclick=()=>{
  E.a.value=E.an.value=v.toFixed(1);draw();
 });
 
-// +/- fine controls: angle 1 degree, x/y 1 unit, bounce 1.
-const stepTargets={angle:[E.a,E.an,1],x:[E.x,E.xn,1],y:[E.y,E.yn,1],b:[E.b,E.bn,1]};
-document.querySelectorAll('[data-step]').forEach(btn=>btn.onclick=()=>{
- const [r,n,step]=stepTargets[btn.dataset.step];
- let v=+r.value + (+btn.dataset.delta)*step;
- if(btn.dataset.step==='angle'){
-   v=Math.round(v*10)/10;
-   if(v<0)v+=360;if(v>360)v-=360;
- }else v=clamp(v,+r.min,+r.max);
- r.value=n.value=(btn.dataset.step==='angle'?v.toFixed(1):Math.round(v));
- draw();
-});
 
 // Aim from the current character position directly at a selected stage corner.
 document.querySelectorAll('[data-corner]').forEach(btn=>btn.onclick=()=>{
