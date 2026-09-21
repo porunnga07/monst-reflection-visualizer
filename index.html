@@ -11,7 +11,7 @@ body{min-height:100dvh}.app{max-width:850px;margin:auto;padding:8px 10px calc(12
 h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minmax(250px,1fr) minmax(310px,.9fr);gap:10px}
 .stageBox,.controls{background:var(--panel);border:1px solid var(--line);border-radius:15px}
 .stageArea{min-width:0;display:flex;flex-direction:column;min-height:0}
-.historyControls{display:flex;justify-content:flex-end;gap:6px;padding-top:4px}.historySection{display:block}
+.historyControls{display:flex;justify-content:flex-end;gap:6px;padding-top:5px}
 .historyBtn{min-height:26px;padding:3px 9px;font-size:11px;border-radius:8px}
 .historyBtn:disabled{opacity:.35;cursor:default}
 .legend{display:flex;justify-content:flex-end;gap:12px;align-items:center;padding:4px 4px 0;color:var(--muted);font-size:11px;flex-wrap:wrap}
@@ -40,10 +40,10 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 .pills{display:flex;gap:5px}.pill{font-size:11px;background:#091323;border:1px solid var(--line);border-radius:999px;padding:4px 7px}
 .help{font-size:10px;color:var(--muted);margin:5px 0 0}
 @media(max-width:650px){
- .app{height:100dvh;overflow:hidden;padding:5px 7px calc(5px + env(safe-area-inset-bottom))}
+ .app{min-height:100dvh;overflow:visible;padding:5px 7px calc(12px + env(safe-area-inset-bottom))}
  h1{font-size:15px;margin:0 0 4px}
- .main{height:calc(100dvh - 29px - env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
- .stageArea{min-height:0;flex:1}
+ .main{min-height:calc(100dvh - 29px - env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
+ .stageArea{min-height:0;flex:1 1 auto}
  .stageBox{min-height:0;flex:1;padding:4px}
  .historyControls{padding-top:2px}
  .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
@@ -99,6 +99,10 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
     </div>
     <div class="section reflectionSection">
       <div class="row"><label>反射回数</label><button class="stepBtn" data-step="b" data-delta="-1">−</button><input id="b" type="range" min="1" max="20" step="1" value="4"><input id="bN" type="number" min="1" max="20" step="1" value="4"><button class="stepBtn" data-step="b" data-delta="1">＋</button></div>
+      <div class="historyControls">
+        <button id="undoBtn" class="historyBtn" title="1つ前の状態に戻る">↶ 戻る</button>
+        <button id="redoBtn" class="historyBtn" title="戻した状態を次へ進める">↷ 進む</button>
+      </div>
     </div>
     
   </div>
