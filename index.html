@@ -10,15 +10,20 @@
 body{min-height:100dvh}.app{max-width:850px;margin:auto;padding:8px 10px calc(12px + env(safe-area-inset-bottom))}
 h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minmax(250px,1fr) minmax(310px,.9fr);gap:10px}
 .stageBox,.controls{background:var(--panel);border:1px solid var(--line);border-radius:15px}
+.stageArea{min-width:0;display:flex;flex-direction:column;min-height:0}
+.historyControls{display:flex;justify-content:flex-end;gap:6px;padding:0}.historySection{display:flex;justify-content:flex-end}
+.historyBtn{min-height:26px;padding:3px 9px;font-size:11px;border-radius:8px}
+.historyBtn:disabled{opacity:.35;cursor:default}
 .stageBox{padding:7px;display:flex;justify-content:center;align-items:center}
 canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-height:760px;aspect-ratio:9/16;border-radius:10px;background:#091323;touch-action:none}
 .controls{padding:10px}.section{padding:7px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}
 .head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.head b{font-size:14px}.angleVal{font-size:23px;font-weight:800;color:var(--cyan)}
 .row{display:grid;grid-template-columns:46px 32px 1fr 56px 32px;align-items:center;gap:5px;margin:5px 0}.row label{font-size:12px;font-weight:700}
 .stepBtn{min-height:30px;width:32px;padding:0;border-radius:8px;font-size:18px;line-height:1}.fineBtn{font-size:11px;font-weight:800}
-.cornerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.angleRow{grid-template-columns:46px 42px 48px 1fr 56px 48px 42px}.angleRow .stepBtn{width:100%;font-size:11px}
+.cornerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.angleRow{grid-template-columns:38px 38px 44px minmax(80px,1fr) 54px 44px 38px 38px}.angleRow .stepBtn{width:100%;font-size:10px}
 button.corner{border-color:#7c5d3b;background:#3a2b1c}
 .positionRow{grid-template-columns:46px minmax(0,1fr) 64px}
+.reflectionSection .row{grid-template-columns:64px 32px minmax(0,1fr) 56px 32px}
 .positionRow input[type=range]{min-width:0}
 input[type=range]{width:100%;margin:0}input[type=number]{width:100%;padding:5px 3px;background:#091323;color:var(--text);border:1px solid #314565;border-radius:8px;font-size:13px;text-align:center}
 .stepper{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:3px 0 0 46px}.stepper button{min-height:30px;font-size:17px;line-height:1;padding:2px 8px}
@@ -32,13 +37,17 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
  .app{height:100dvh;overflow:hidden;padding:5px 7px calc(5px + env(safe-area-inset-bottom))}
  h1{font-size:15px;margin:0 0 4px}
  .main{height:calc(100dvh - 29px - env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
+ .stageArea{min-height:0;flex:1}
  .stageBox{min-height:0;flex:1;padding:4px}
+ .historyControls{padding-top:2px}
+ .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
  canvas{height:100%;width:auto;max-width:100%;max-height:none}
  .controls{flex:0 0 auto;padding:6px 8px;border-radius:12px}
  .section{padding:4px 0}.head b{font-size:12px}.angleVal{font-size:18px}
  .row{grid-template-columns:34px 29px 1fr 46px 29px;margin:2px 0;gap:3px}.row label{font-size:11px}
  .positionRow{grid-template-columns:28px minmax(0,1fr) 52px}
- .stepBtn{width:29px;min-height:27px;font-size:17px}.cornerGrid{gap:3px;margin-top:3px}.angleRow{grid-template-columns:30px 36px 43px 1fr 43px 43px 36px}.angleRow .stepBtn{width:100%;font-size:9px}
+ .reflectionSection .row{grid-template-columns:52px 29px minmax(0,1fr) 46px 29px}
+ .stepBtn{width:29px;min-height:27px;font-size:17px}.cornerGrid{gap:3px;margin-top:3px}.angleRow{grid-template-columns:32px 32px 39px minmax(58px,1fr) 42px 39px 32px 32px}.angleRow .stepBtn{width:100%;font-size:8px}
  .stepper{margin-left:38px;gap:3px}.stepper button{min-height:27px;font-size:16px}
  input[type=number]{padding:3px 2px;font-size:12px}
  .quick{gap:3px;margin-top:3px}button{min-height:29px;font-size:11px;padding:3px 1px}
@@ -50,11 +59,13 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 <div class="app">
 <h1>反射軌道ビジュアライザー</h1>
 <div class="main">
-  <div class="stageBox"><canvas id="c" width="540" height="960"></canvas></div>
+  <div class="stageArea">
+    <div class="stageBox"><canvas id="c" width="540" height="960"></canvas></div>
+  </div>
   <div class="controls">
     <div class="section">
       <div class="head"><b>打ち出し角度</b><span class="angleVal"><span id="angleText">45.0</span>°</span></div>
-      <div class="row angleRow"><span></span><button class="stepBtn" data-step="angle" data-delta="-1">−1°</button><button class="stepBtn fineBtn" data-step="angle" data-delta="-0.1">−0.1°</button><input id="angle" type="range" min="0" max="360" step="0.1" value="45"><input id="angleN" type="number" min="0" max="360" step="0.1" value="45"><button class="stepBtn fineBtn" data-step="angle" data-delta="0.1">＋0.1°</button><button class="stepBtn" data-step="angle" data-delta="1">＋1°</button></div>
+      <div class="row angleRow"><button class="stepBtn" data-step="angle" data-delta="-5">−5°</button><button class="stepBtn" data-step="angle" data-delta="-1">−1°</button><button class="stepBtn fineBtn" data-step="angle" data-delta="-0.1">−0.1°</button><input id="angle" type="range" min="0" max="360" step="0.1" value="45"><input id="angleN" type="number" min="0" max="360" step="0.1" value="45"><button class="stepBtn fineBtn" data-step="angle" data-delta="0.1">＋0.1°</button><button class="stepBtn" data-step="angle" data-delta="1">＋1°</button><button class="stepBtn" data-step="angle" data-delta="5">＋5°</button></div>
       
       <div class="quick">
         <button class="diag" data-diag="UR">対角 ↗</button><button class="diag" data-diag="UL">対角 ↖</button>
@@ -67,15 +78,15 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
       <p class="diagNote">「対角」は長方形の対角線と平行。「○○角」は現在位置からその角へ直接向かう角度です。</p>
     </div>
     <div class="section">
-      <div class="head"><b>初期位置</b><span class="pills"><span class="pill">x=<span id="xText">50</span></span><span class="pill">y=<span id="yText">50</span></span></span></div>
+      <div class="head"><b>初期位置</b></div>
       <div class="row positionRow"><label>x</label><input id="x" type="range" min="0" max="100" step="1" value="50"><input id="xN" type="number" min="0" max="100" step="1" value="50"></div>
       <div class="stepper"><button data-step="x" data-delta="-1">− 1</button><button data-step="x" data-delta="1">＋ 1</button></div>
       <div class="row positionRow"><label>y</label><input id="y" type="range" min="0" max="100" step="1" value="50"><input id="yN" type="number" min="0" max="100" step="1" value="50"></div>
       <div class="stepper"><button data-step="y" data-delta="-1">− 1</button><button data-step="y" data-delta="1">＋ 1</button></div>
       <p class="help">ステージを直接タップ／ドラッグしても初期位置を変更できます。</p>
     </div>
-    <div class="section">
-      <div class="row"><label>反射</label><button class="stepBtn" data-step="b" data-delta="-1">−</button><input id="b" type="range" min="1" max="50" step="1" value="10"><input id="bN" type="number" min="1" max="50" step="1" value="10"><button class="stepBtn" data-step="b" data-delta="1">＋</button></div>
+    <div class="section reflectionSection">
+      <div class="row"><label>反射回数</label><button class="stepBtn" data-step="b" data-delta="-1">−</button><input id="b" type="range" min="1" max="20" step="1" value="10"><input id="bN" type="number" min="1" max="20" step="1" value="10"><button class="stepBtn" data-step="b" data-delta="1">＋</button></div>
     </div>
     
   </div>
@@ -173,7 +184,7 @@ function draw(){
  for(let i=1;i<P.length;i++){arrow(P[i-1],P[i]);ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(P[i].x,P[i].y,7,0,Math.PI*2);ctx.fill()}
  let s=P[0];ctx.fillStyle='#ff7b7b';ctx.beginPath();ctx.arc(s.x,s.y,14,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
  let d=dir();ctx.strokeStyle='#ffb0b0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+d.dx*46,s.y+d.dy*46);ctx.stroke();
- $('angleText').textContent=(+E.a.value).toFixed(1);$('xText').textContent=E.x.value;$('yText').textContent=E.y.value;
+ $('angleText').textContent=(+E.a.value).toFixed(1);
 }
 let drag=false;
 function move(ev){
@@ -182,6 +193,66 @@ function move(ev){
  E.y.value=E.yn.value=Math.round(clamp((S.b-py)/sh*100,0,100));draw()
 }
 c.onpointerdown=e=>{drag=true;c.setPointerCapture(e.pointerId);move(e)};c.onpointermove=e=>{if(drag)move(e)};c.onpointerup=c.onpointercancel=()=>drag=false;
+
+// Undo / redo history
+const undoBtn=document.getElementById('undoBtn');
+const redoBtn=document.getElementById('redoBtn');
+let undoStack=[], redoStack=[], restoring=false;
+function snapshot(){
+  return {a:+E.a.value,x:+E.x.value,y:+E.y.value,b:+E.b.value};
+}
+function sameState(a,b){
+  return a && b && a.a===b.a && a.x===b.x && a.y===b.y && a.b===b.b;
+}
+let lastState=snapshot();
+function updateHistoryButtons(){
+  undoBtn.disabled=undoStack.length===0;
+  redoBtn.disabled=redoStack.length===0;
+}
+function recordHistory(){
+  if(restoring)return;
+  const now=snapshot();
+  if(!sameState(now,lastState)){
+    undoStack.push(lastState);
+    if(undoStack.length>100)undoStack.shift();
+    redoStack=[];
+    lastState=now;
+    updateHistoryButtons();
+  }
+}
+function restoreState(s){
+  restoring=true;
+  E.a.value=E.an.value=s.a;
+  E.x.value=E.xn.value=s.x;
+  E.y.value=E.yn.value=s.y;
+  E.b.value=E.bn.value=s.b;
+  lastState=snapshot();
+  draw();
+  restoring=false;
+  updateHistoryButtons();
+}
+undoBtn.onclick=()=>{
+  if(!undoStack.length)return;
+  redoStack.push(snapshot());
+  restoreState(undoStack.pop());
+};
+redoBtn.onclick=()=>{
+  if(!redoStack.length)return;
+  undoStack.push(snapshot());
+  restoreState(redoStack.pop());
+};
+
+// Record completed interactions rather than every tiny slider movement.
+[E.a,E.x,E.y,E.b,E.an,E.xn,E.yn,E.bn].forEach(el=>{
+  el.addEventListener('change',recordHistory);
+});
+document.querySelectorAll('[data-step],[data-diag],[data-corner]').forEach(btn=>{
+  btn.addEventListener('click',()=>setTimeout(recordHistory,0));
+});
+c.addEventListener('pointerup',recordHistory);
+c.addEventListener('pointercancel',recordHistory);
+updateHistoryButtons();
+
 draw();
 </script>
 </body>
