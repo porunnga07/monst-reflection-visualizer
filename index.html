@@ -21,11 +21,12 @@ h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minm
 .bounceDot{background:var(--yellow)}
 .legendLine{display:inline-block;width:18px;height:3px;border-radius:999px;background:var(--cyan)}
 .stageBox{padding:7px;display:flex;justify-content:center;align-items:center;position:relative}
-.aimPad{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:78px;height:92px;touch-action:none;-webkit-user-select:none;user-select:none}
-.aimLabel{position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;color:var(--muted);font-weight:700}
+.aimPad{position:absolute;left:80%;top:50%;transform:translate(-50%,-50%);width:150px;height:220px;touch-action:none;-webkit-user-select:none;user-select:none}
+.aimLabel{position:absolute;top:1px;left:0;right:0;text-align:center;font-size:9px;color:var(--muted);font-weight:700}
+.aimGuide{position:absolute;left:50%;top:56%;height:154px;aspect-ratio:9/16;transform:translate(-50%,-50%);border:1.5px solid rgba(220,232,255,.72);border-radius:4px;pointer-events:none;box-shadow:0 0 0 1px rgba(119,215,255,.08) inset}
 .aimCenter{position:absolute;left:50%;top:56%;width:8px;height:8px;border-radius:50%;background:#eaf4ff;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(110,231,255,.16)}
 .aimLine{position:absolute;left:50%;top:56%;height:3px;width:26px;background:var(--cyan);border-radius:999px;transform-origin:0 50%;pointer-events:none}
-.aimHandle{position:absolute;left:50%;top:56%;width:22px;height:22px;border-radius:50%;background:#243a5c;border:2px solid #8eeeff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.aimHandle{position:absolute;left:50%;top:56%;width:24px;height:24px;border-radius:50%;background:#243a5c;border:2px solid #8eeeff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .aimHandle::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-right:2px solid #dffaff;border-bottom:2px solid #dffaff;transform:translate(-50%,-50%) rotate(45deg)}
 canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-height:760px;aspect-ratio:9/16;border-radius:10px;background:#091323;touch-action:none}
 .controls{padding:10px}.section{padding:7px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}
@@ -64,8 +65,9 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 
  .stageArea{flex:0 0 auto;min-height:0}
  .stageBox{height:min(30dvh,305px);min-height:0;flex:none;padding:3px}
- .aimPad{right:5px;width:70px;height:86px}
- .aimHandle{width:21px;height:21px}
+ .aimPad{left:80%;right:auto;width:138px;height:205px}
+ .aimGuide{height:148px}
+ .aimHandle{width:23px;height:23px}
  canvas{height:100%;width:auto;max-width:100%;max-height:none}
  .historyControls{padding-top:1px}
  .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
@@ -93,6 +95,7 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
       <canvas id="c" width="540" height="960"></canvas>
       <div id="aimPad" class="aimPad" aria-label="引っ張って打ち出し方向を調整">
         <div class="aimLabel">引っぱる</div>
+        <div class="aimGuide"></div>
         <div class="aimCenter"></div>
         <div id="aimLine" class="aimLine"></div>
         <div id="aimHandle" class="aimHandle"></div>
@@ -329,7 +332,7 @@ function syncAimPad(){
   const rect=aimPad.getBoundingClientRect();
   if(!rect.width || !rect.height) return;
   const cx=rect.width/2, cy=rect.height*0.56;
-  const radius=Math.min(rect.width*0.31, 25);
+  const radius=Math.min(rect.width*0.40, 60);
   // Pull direction is 180° opposite to launch direction.
   const pull=(+E.a.value+180)*Math.PI/180;
   const dx=Math.cos(pull)*radius;
@@ -347,7 +350,7 @@ function aimFromPointer(ev){
   const cx=r.width/2, cy=r.height*0.56;
   let dx=ev.clientX-r.left-cx;
   let dy=ev.clientY-r.top-cy;
-  const maxR=Math.min(r.width*0.34,28);
+  const maxR=Math.min(r.width*0.43,64);
   const len=Math.hypot(dx,dy) || 1;
   if(len>maxR){dx=dx/len*maxR;dy=dy/len*maxR;}
   // Convert pull direction to launch direction (+180°).
