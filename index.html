@@ -28,6 +28,17 @@ canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-heigh
 .stepBtn{min-height:30px;width:32px;padding:0;border-radius:8px;font-size:18px;line-height:1}.fineBtn{font-size:11px;font-weight:800}
 .cornerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.angleRow{grid-template-columns:38px 38px 44px minmax(80px,1fr) 54px 44px 38px 38px}.angleRow .stepBtn{width:100%;font-size:10px}
 button.corner{border-color:#7c5d3b;background:#3a2b1c}
+.loopPanel{margin-top:6px;padding:7px;border:1px solid #2e4667;border-radius:10px;background:#0d1829}
+.loopTitle{font-size:12px;font-weight:800;margin-bottom:5px}
+.loopRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0}
+.loopLabel{font-size:11px;color:var(--muted)}
+.segmented{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:150px}
+.segment,.dirBtn,.miniBtn{min-height:28px}
+.segment.active,.dirBtn.active{background:#16485a;border-color:#4da7bf}
+.nControl{display:grid;grid-template-columns:34px 44px 34px;align-items:center;gap:5px}
+.nValue{text-align:center;font-weight:800;font-size:14px}
+.loopInfo{font-size:10px;color:#c8d6ec;background:#091323;border:1px solid #263a57;border-radius:8px;padding:5px 7px;margin-top:5px}
+.directionRow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}
 .positionRow{grid-template-columns:46px minmax(0,1fr) 64px}
 .reflectionSection .row{grid-template-columns:64px 32px minmax(0,1fr) 56px 32px}
 .positionRow input[type=range]{min-width:0}
@@ -81,15 +92,36 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
       <div class="head"><b>打ち出し角度</b><span class="angleVal"><span id="angleText">45.0</span>°</span></div>
       <div class="row angleRow"><button class="stepBtn" data-step="angle" data-delta="-5">−5°</button><button class="stepBtn" data-step="angle" data-delta="-1">−1°</button><button class="stepBtn fineBtn" data-step="angle" data-delta="-0.1">−0.1°</button><input id="angle" type="range" min="0" max="360" step="0.1" value="45"><input id="angleN" type="number" min="0" max="360" step="0.1" value="45"><button class="stepBtn fineBtn" data-step="angle" data-delta="0.1">＋0.1°</button><button class="stepBtn" data-step="angle" data-delta="1">＋1°</button><button class="stepBtn" data-step="angle" data-delta="5">＋5°</button></div>
       
-      <div class="quick">
-        <button class="diag" data-diag="UR">対角 ↗</button><button class="diag" data-diag="UL">対角 ↖</button>
-        <button class="diag" data-diag="DL">対角 ↙</button><button class="diag" data-diag="DR">対角 ↘</button>
+      <div class="loopPanel">
+        <div class="loopTitle">ループ軌道</div>
+        <div class="loopRow">
+          <span class="loopLabel">分割方向</span>
+          <div class="segmented">
+            <button id="loopH" class="segment active" data-loop-axis="H">H方向</button>
+            <button id="loopW" class="segment" data-loop-axis="W">W方向</button>
+          </div>
+        </div>
+        <div class="loopRow">
+          <span class="loopLabel">分割数 n</span>
+          <div class="nControl">
+            <button id="nMinus" class="miniBtn">−</button>
+            <span id="nValue" class="nValue">1</span>
+            <button id="nPlus" class="miniBtn">＋</button>
+          </div>
+        </div>
+        <div id="loopInfo" class="loopInfo">対角線 ｜ 4反射</div>
+        <div class="directionRow">
+          <button class="dirBtn active" data-loop-dir="UR">↗</button>
+          <button class="dirBtn" data-loop-dir="UL">↖</button>
+          <button class="dirBtn" data-loop-dir="DL">↙</button>
+          <button class="dirBtn" data-loop-dir="DR">↘</button>
+        </div>
       </div>
       <div class="cornerGrid">
         <button class="corner" data-corner="TR">右上角 ↗</button><button class="corner" data-corner="TL">左上角 ↖</button>
         <button class="corner" data-corner="BL">左下角 ↙</button><button class="corner" data-corner="BR">右下角 ↘</button>
       </div>
-      <p class="diagNote">「対角」は長方形の対角線と平行。「○○角」は現在位置からその角へ直接向かう角度です。</p>
+      <p class="diagNote">ループ軌道は H/W と n から角度・1周期の反射回数を自動設定します。角度や反射回数はその後手動変更できます。</p>
     </div>
     <div class="section">
       <div class="head"><b>初期位置</b></div>
@@ -142,13 +174,78 @@ document.querySelectorAll('[data-step]').forEach(btn=>btn.addEventListener('clic
  t.r.value=v;t.n.value=v;draw();
 }));
 
-document.querySelectorAll('[data-diag]').forEach(btn=>btn.onclick=()=>{
- const d=diagonalDeg;
- const vals={UR:d,UL:180-d,DL:180+d,DR:360-d};
- const v=vals[btn.dataset.diag];
- E.a.value=E.an.value=v.toFixed(1);draw();
-});
 
+
+
+// Loop trajectory controls
+let loopAxis='H';
+let loopN=1;
+let loopDir='UR';
+
+function baseLoopAngle(axis,n){
+  if(axis==='H') return Math.atan2(sh, n*sw)*180/Math.PI;
+  return Math.atan2(n*sh, sw)*180/Math.PI;
+}
+function directedAngle(base,dir){
+  const vals={UR:base,UL:180-base,DL:180+base,DR:360-base};
+  return ((vals[dir]%360)+360)%360;
+}
+function updateLoopButtons(){
+  document.querySelectorAll('[data-loop-axis]').forEach(b=>b.classList.toggle('active',b.dataset.loopAxis===loopAxis));
+  document.querySelectorAll('[data-loop-dir]').forEach(b=>b.classList.toggle('active',b.dataset.loopDir===loopDir));
+  const nv=document.getElementById('nValue');
+  if(nv) nv.textContent=loopN;
+}
+function updateLoopInfo(){
+  const el=document.getElementById('loopInfo');
+  if(!el)return;
+  const base=baseLoopAngle(loopAxis,loopN);
+  const expected=directedAngle(base,loopDir);
+  const current=+E.a.value;
+  let diff=current-expected;
+  while(diff>180)diff-=360;
+  while(diff<-180)diff+=360;
+  const bounces=2*loopN+2;
+  if(loopN===1 && Math.abs(diff)<0.05 && +E.b.value===4){
+    el.textContent=`対角線 ｜ 4反射 ｜ θ=${expected.toFixed(1)}°`;
+  }else{
+    const axisText=loopAxis==='H' ? `H/${loopN} ｜ 縦${loopN}分割` : `W/${loopN} ｜ 横${loopN}分割`;
+    if(Math.abs(diff)<0.05 && +E.b.value===Math.min(20,bounces)){
+      el.textContent=`${axisText} ｜ ${bounces}反射 ｜ θ=${expected.toFixed(1)}°`;
+    }else{
+      const sign=diff>=0?'+':'';
+      el.textContent=`${axisText}基準 θ=${expected.toFixed(1)}° ｜ 現在 ${current.toFixed(1)}° (${sign}${diff.toFixed(1)}°) ｜ 反射 ${E.b.value}`;
+    }
+  }
+}
+function setLoopPreset(){
+  const base=baseLoopAngle(loopAxis,loopN);
+  const a=directedAngle(base,loopDir);
+  E.a.value=E.an.value=a.toFixed(1);
+  E.b.value=E.bn.value=Math.min(20,2*loopN+2);
+  updateLoopButtons();
+  draw();
+}
+document.querySelectorAll('[data-loop-axis]').forEach(btn=>btn.addEventListener('click',()=>{
+  loopAxis=btn.dataset.loopAxis;
+  setLoopPreset();
+  setTimeout(recordHistory,0);
+}));
+document.querySelectorAll('[data-loop-dir]').forEach(btn=>btn.addEventListener('click',()=>{
+  loopDir=btn.dataset.loopDir;
+  setLoopPreset();
+  setTimeout(recordHistory,0);
+}));
+document.getElementById('nMinus')?.addEventListener('click',()=>{
+  loopN=Math.max(1,loopN-1);
+  setLoopPreset();
+  setTimeout(recordHistory,0);
+});
+document.getElementById('nPlus')?.addEventListener('click',()=>{
+  loopN=Math.min(9,loopN+1);
+  setLoopPreset();
+  setTimeout(recordHistory,0);
+});
 
 // Aim from the current character position directly at a selected stage corner.
 document.querySelectorAll('[data-corner]').forEach(btn=>btn.onclick=()=>{
@@ -202,7 +299,7 @@ function draw(){
  for(let i=1;i<P.length;i++){arrow(P[i-1],P[i]);ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(P[i].x,P[i].y,7,0,Math.PI*2);ctx.fill()}
  let s=P[0];ctx.fillStyle='#ff7b7b';ctx.beginPath();ctx.arc(s.x,s.y,14,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
  let d=dir();ctx.strokeStyle='#ffb0b0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+d.dx*46,s.y+d.dy*46);ctx.stroke();
- $('angleText').textContent=(+E.a.value).toFixed(1);
+ $('angleText').textContent=(+E.a.value).toFixed(1); if(typeof updateLoopInfo==='function') updateLoopInfo();
 }
 let drag=false;
 function move(ev){
@@ -219,10 +316,10 @@ const undoBtn=document.getElementById('undoBtn');
 const redoBtn=document.getElementById('redoBtn');
 let undoStack=[], redoStack=[], restoring=false;
 function snapshot(){
-  return {a:+E.a.value,x:+E.x.value,y:+E.y.value,b:+E.b.value};
+  return {a:+E.a.value,x:+E.x.value,y:+E.y.value,b:+E.b.value,loopAxis,loopN,loopDir};
 }
 function sameState(a,b){
-  return a && b && a.a===b.a && a.x===b.x && a.y===b.y && a.b===b.b;
+  return a && b && a.a===b.a && a.x===b.x && a.y===b.y && a.b===b.b && a.loopAxis===b.loopAxis && a.loopN===b.loopN && a.loopDir===b.loopDir;
 }
 let lastState=snapshot();
 function updateHistoryButtons(){
@@ -246,6 +343,10 @@ function restoreState(s){
   E.x.value=E.xn.value=s.x;
   E.y.value=E.yn.value=s.y;
   E.b.value=E.bn.value=s.b;
+  if(s.loopAxis)loopAxis=s.loopAxis;
+  if(s.loopN)loopN=s.loopN;
+  if(s.loopDir)loopDir=s.loopDir;
+  updateLoopButtons();
   lastState=snapshot();
   draw();
   restoring=false;
