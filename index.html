@@ -371,9 +371,12 @@ function syncAimPad(){
   aimLine.style.left=geo.cx+'px';
   aimLine.style.top=geo.cy+'px';
   aimLine.style.width=geo.length+'px';
-  aimLine.style.transform=`rotate(${Math.atan2(geo.dy,geo.dx)}rad)`;
 
-  // Chevron always points from the center toward the outer edge.
+  // The direction line points in the LAUNCH direction,
+  // which is opposite to the pull/drag direction.
+  aimLine.style.transform=`rotate(${Math.atan2(-geo.dy,-geo.dx)}rad)`;
+
+  // Chevron also points in the launch direction.
   aimHandle.style.setProperty('--arrow-rot',`${Math.atan2(-geo.dy,-geo.dx)}rad`);
 }
 
