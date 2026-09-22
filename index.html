@@ -27,7 +27,7 @@ h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minm
 .aimCenter{position:absolute;left:50%;top:56%;width:8px;height:8px;border-radius:50%;background:#eaf4ff;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(110,231,255,.16)}
 .aimLine{position:absolute;left:50%;top:56%;height:3px;width:26px;background:var(--cyan);border-radius:999px;transform-origin:0 50%;pointer-events:none}
 .aimHandle{position:absolute;left:50%;top:56%;width:24px;height:24px;border-radius:50%;background:#243a5c;border:2px solid #8eeeff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.aimHandle::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-right:2px solid #dffaff;border-bottom:2px solid #dffaff;transform:translate(-50%,-50%) rotate(45deg)}
+.aimHandle::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;background:#dffaff;clip-path:polygon(0 0,100% 50%,0 100%,28% 50%);transform:translate(-50%,-50%) rotate(var(--arrow-rot,0deg));transform-origin:50% 50%}
 canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-height:760px;aspect-ratio:9/16;border-radius:10px;background:#091323;touch-action:none}
 .controls{padding:10px}.section{padding:7px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}
 .head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.head b{font-size:14px}.angleVal{font-size:23px;font-weight:800;color:var(--cyan)}
@@ -327,37 +327,79 @@ const aimHandle=document.getElementById('aimHandle');
 const aimLine=document.getElementById('aimLine');
 let aimDragging=false;
 
+function aimGeometryFromLaunch(launchDeg){
+  if(!aimPad) return null;
+  const padRect=aimPad.getBoundingClientRect();
+  const guide=aimPad.querySelector('.aimGuide');
+  if(!guide) return null;
+  const g=guide.getBoundingClientRect();
+
+  // Guide-frame center in aimPad-local coordinates.
+  const cx=(g.left-padRect.left)+g.width/2;
+  const cy=(g.top-padRect.top)+g.height/2;
+
+  // Monster Strike style: pull direction is opposite launch direction.
+  const pullDeg=(launchDeg+180)%360;
+  const a=pullDeg*Math.PI/180;
+  const ux=Math.cos(a);
+  const uy=-Math.sin(a); // screen Y grows downward
+
+  // Intersect the pull ray with the 9:16 guide rectangle.
+  // Leave a small inset so the circular handle itself stays inside the frame.
+  const handleRadius=12;
+  const halfW=Math.max(4,g.width/2-handleRadius);
+  const halfH=Math.max(4,g.height/2-handleRadius);
+
+  const tx=Math.abs(ux)>1e-9 ? halfW/Math.abs(ux) : Infinity;
+  const ty=Math.abs(uy)>1e-9 ? halfH/Math.abs(uy) : Infinity;
+  const t=Math.min(tx,ty);
+
+  return {
+    cx,cy,
+    dx:ux*t,dy:uy*t,
+    pullDeg,
+    length:t
+  };
+}
+
 function syncAimPad(){
   if(!aimPad || !aimHandle || !aimLine) return;
-  const rect=aimPad.getBoundingClientRect();
-  if(!rect.width || !rect.height) return;
-  const cx=rect.width/2, cy=rect.height*0.56;
-  const radius=Math.min(rect.width*0.40, 60);
-  // Pull direction is 180° opposite to launch direction.
-  const pull=(+E.a.value+180)*Math.PI/180;
-  const dx=Math.cos(pull)*radius;
-  const dy=-Math.sin(pull)*radius;
-  aimHandle.style.left=(cx+dx)+'px';
-  aimHandle.style.top=(cy+dy)+'px';
-  aimLine.style.left=cx+'px';
-  aimLine.style.top=cy+'px';
-  aimLine.style.width=Math.hypot(dx,dy)+'px';
-  aimLine.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
+  const geo=aimGeometryFromLaunch(+E.a.value);
+  if(!geo) return;
+
+  aimHandle.style.left=(geo.cx+geo.dx)+'px';
+  aimHandle.style.top=(geo.cy+geo.dy)+'px';
+
+  aimLine.style.left=geo.cx+'px';
+  aimLine.style.top=geo.cy+'px';
+  aimLine.style.width=geo.length+'px';
+  aimLine.style.transform=`rotate(${Math.atan2(geo.dy,geo.dx)}rad)`;
+
+  // Chevron always points from the center toward the outer edge.
+  aimHandle.style.setProperty('--arrow-rot',`${Math.atan2(geo.dy,geo.dx)}rad`);
 }
 
 function aimFromPointer(ev){
-  const r=aimPad.getBoundingClientRect();
-  const cx=r.width/2, cy=r.height*0.56;
-  let dx=ev.clientX-r.left-cx;
-  let dy=ev.clientY-r.top-cy;
-  const maxR=Math.min(r.width*0.43,64);
-  const len=Math.hypot(dx,dy) || 1;
-  if(len>maxR){dx=dx/len*maxR;dy=dy/len*maxR;}
-  // Convert pull direction to launch direction (+180°).
+  const padRect=aimPad.getBoundingClientRect();
+  const guide=aimPad.querySelector('.aimGuide');
+  if(!guide) return;
+  const g=guide.getBoundingClientRect();
+
+  const cx=(g.left-padRect.left)+g.width/2;
+  const cy=(g.top-padRect.top)+g.height/2;
+
+  // Pointer direction from guide center = pull direction.
+  let dx=ev.clientX-padRect.left-cx;
+  let dy=ev.clientY-padRect.top-cy;
+  if(Math.hypot(dx,dy)<1) return;
+
   let pullDeg=Math.atan2(-dy,dx)*180/Math.PI;
   if(pullDeg<0) pullDeg+=360;
+
+  // Launch direction is the opposite of the pull direction.
   let launchDeg=(pullDeg+180)%360;
   launchDeg=Math.round(launchDeg*10)/10;
+
   E.a.value=E.an.value=launchDeg.toFixed(1);
   draw();
 }
