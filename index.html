@@ -20,7 +20,13 @@ h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minm
 .startDot{background:var(--red)}
 .bounceDot{background:var(--yellow)}
 .legendLine{display:inline-block;width:18px;height:3px;border-radius:999px;background:var(--cyan)}
-.stageBox{padding:7px;display:flex;justify-content:center;align-items:center}
+.stageBox{padding:7px;display:flex;justify-content:center;align-items:center;position:relative}
+.aimPad{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:78px;height:92px;touch-action:none;-webkit-user-select:none;user-select:none}
+.aimLabel{position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;color:var(--muted);font-weight:700}
+.aimCenter{position:absolute;left:50%;top:56%;width:8px;height:8px;border-radius:50%;background:#eaf4ff;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(110,231,255,.16)}
+.aimLine{position:absolute;left:50%;top:56%;height:3px;width:26px;background:var(--cyan);border-radius:999px;transform-origin:0 50%;pointer-events:none}
+.aimHandle{position:absolute;left:50%;top:56%;width:22px;height:22px;border-radius:50%;background:#243a5c;border:2px solid #8eeeff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.aimHandle::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-right:2px solid #dffaff;border-bottom:2px solid #dffaff;transform:translate(-50%,-50%) rotate(45deg)}
 canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-height:760px;aspect-ratio:9/16;border-radius:10px;background:#091323;touch-action:none}
 .controls{padding:10px}.section{padding:7px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}
 .head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.head b{font-size:14px}.angleVal{font-size:23px;font-weight:800;color:var(--cyan)}
@@ -58,6 +64,8 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 
  .stageArea{flex:0 0 auto;min-height:0}
  .stageBox{height:min(30dvh,305px);min-height:0;flex:none;padding:3px}
+ .aimPad{right:5px;width:70px;height:86px}
+ .aimHandle{width:21px;height:21px}
  canvas{height:100%;width:auto;max-width:100%;max-height:none}
  .historyControls{padding-top:1px}
  .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
@@ -81,7 +89,15 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 <h1>反射軌道ビジュアライザー</h1>
 <div class="main">
   <div class="stageArea">
-    <div class="stageBox"><canvas id="c" width="540" height="960"></canvas></div>
+    <div class="stageBox">
+      <canvas id="c" width="540" height="960"></canvas>
+      <div id="aimPad" class="aimPad" aria-label="引っ張って打ち出し方向を調整">
+        <div class="aimLabel">引っぱる</div>
+        <div class="aimCenter"></div>
+        <div id="aimLine" class="aimLine"></div>
+        <div id="aimHandle" class="aimHandle"></div>
+      </div>
+    </div>
     <div class="legend">
       <span><i class="legendDot startDot"></i>初期位置</span>
       <span><i class="legendDot bounceDot"></i>反射点</span>
@@ -204,9 +220,9 @@ function updateLoopInfo(){
   let diff=current-expected;
   while(diff>180)diff-=360;
   while(diff<-180)diff+=360;
-  const bounces=2*loopN+2;
-  if(loopN===1 && Math.abs(diff)<0.05 && +E.b.value===4){
-    el.textContent=`対角線 ｜ 4反射 ｜ θ=${expected.toFixed(1)}°`;
+  const bounces=2*loopN+3;
+  if(loopN===1 && Math.abs(diff)<0.05 && +E.b.value===5){
+    el.textContent=`対角線 ｜ 5反射表示 ｜ θ=${expected.toFixed(1)}°`;
   }else{
     const axisText=loopAxis==='H' ? `H/${loopN} ｜ 縦${loopN}分割` : `W/${loopN} ｜ 横${loopN}分割`;
     if(Math.abs(diff)<0.05 && +E.b.value===Math.min(20,bounces)){
@@ -221,7 +237,7 @@ function setLoopPreset(){
   const base=baseLoopAngle(loopAxis,loopN);
   const a=directedAngle(base,loopDir);
   E.a.value=E.an.value=a.toFixed(1);
-  E.b.value=E.bn.value=Math.min(20,2*loopN+2);
+  E.b.value=E.bn.value=Math.min(20,2*loopN+3);
   updateLoopButtons();
   draw();
 }
@@ -241,7 +257,7 @@ document.getElementById('nMinus')?.addEventListener('click',()=>{
   setTimeout(recordHistory,0);
 });
 document.getElementById('nPlus')?.addEventListener('click',()=>{
-  loopN=Math.min(9,loopN+1);
+  loopN=Math.min(8,loopN+1);
   setLoopPreset();
   setTimeout(recordHistory,0);
 });
@@ -298,8 +314,72 @@ function draw(){
  for(let i=1;i<P.length;i++){arrow(P[i-1],P[i]);ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(P[i].x,P[i].y,7,0,Math.PI*2);ctx.fill()}
  let s=P[0];ctx.fillStyle='#ff7b7b';ctx.beginPath();ctx.arc(s.x,s.y,14,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
  let d=dir();ctx.strokeStyle='#ffb0b0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+d.dx*46,s.y+d.dy*46);ctx.stroke();
- $('angleText').textContent=(+E.a.value).toFixed(1); if(typeof updateLoopInfo==='function') updateLoopInfo();
+ $('angleText').textContent=(+E.a.value).toFixed(1); if(typeof updateLoopInfo==='function') updateLoopInfo(); if(typeof syncAimPad==='function') requestAnimationFrame(syncAimPad);
 }
+
+// Right-side pull-to-aim control.
+// Like Monster Strike: drag/pull in one direction, launch direction is the opposite.
+const aimPad=document.getElementById('aimPad');
+const aimHandle=document.getElementById('aimHandle');
+const aimLine=document.getElementById('aimLine');
+let aimDragging=false;
+
+function syncAimPad(){
+  if(!aimPad || !aimHandle || !aimLine) return;
+  const rect=aimPad.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  const cx=rect.width/2, cy=rect.height*0.56;
+  const radius=Math.min(rect.width*0.31, 25);
+  // Pull direction is 180° opposite to launch direction.
+  const pull=(+E.a.value+180)*Math.PI/180;
+  const dx=Math.cos(pull)*radius;
+  const dy=-Math.sin(pull)*radius;
+  aimHandle.style.left=(cx+dx)+'px';
+  aimHandle.style.top=(cy+dy)+'px';
+  aimLine.style.left=cx+'px';
+  aimLine.style.top=cy+'px';
+  aimLine.style.width=Math.hypot(dx,dy)+'px';
+  aimLine.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
+}
+
+function aimFromPointer(ev){
+  const r=aimPad.getBoundingClientRect();
+  const cx=r.width/2, cy=r.height*0.56;
+  let dx=ev.clientX-r.left-cx;
+  let dy=ev.clientY-r.top-cy;
+  const maxR=Math.min(r.width*0.34,28);
+  const len=Math.hypot(dx,dy) || 1;
+  if(len>maxR){dx=dx/len*maxR;dy=dy/len*maxR;}
+  // Convert pull direction to launch direction (+180°).
+  let pullDeg=Math.atan2(-dy,dx)*180/Math.PI;
+  if(pullDeg<0) pullDeg+=360;
+  let launchDeg=(pullDeg+180)%360;
+  launchDeg=Math.round(launchDeg*10)/10;
+  E.a.value=E.an.value=launchDeg.toFixed(1);
+  draw();
+}
+
+if(aimPad){
+  aimPad.addEventListener('pointerdown',ev=>{
+    aimDragging=true;
+    aimPad.setPointerCapture(ev.pointerId);
+    aimFromPointer(ev);
+  });
+  aimPad.addEventListener('pointermove',ev=>{
+    if(aimDragging) aimFromPointer(ev);
+  });
+  aimPad.addEventListener('pointerup',()=>{
+    if(!aimDragging) return;
+    aimDragging=false;
+    recordHistory();
+  });
+  aimPad.addEventListener('pointercancel',()=>{
+    if(!aimDragging) return;
+    aimDragging=false;
+    recordHistory();
+  });
+}
+
 let drag=false;
 function move(ev){
  const r=c.getBoundingClientRect(),px=(ev.clientX-r.left)*W/r.width,py=(ev.clientY-r.top)*H/r.height;
