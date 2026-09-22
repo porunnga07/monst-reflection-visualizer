@@ -24,9 +24,8 @@ h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minm
 .aimPad{position:absolute;left:80%;top:50%;transform:translate(-50%,-50%);width:150px;height:220px;touch-action:none;-webkit-user-select:none;user-select:none}
 .aimGuide{position:absolute;left:50%;top:56%;height:154px;aspect-ratio:9/16;transform:translate(-50%,-50%);border:1.5px solid rgba(220,232,255,.72);border-radius:4px;pointer-events:none;box-shadow:0 0 0 1px rgba(119,215,255,.08) inset}
 .aimCenter{position:absolute;left:50%;top:56%;width:8px;height:8px;border-radius:50%;background:#eaf4ff;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(110,231,255,.16)}
-.aimLine{position:absolute;left:50%;top:56%;height:3px;width:26px;background:var(--cyan);border-radius:999px;transform-origin:0 50%;pointer-events:none}
-.aimHandle{position:absolute;left:50%;top:56%;width:24px;height:24px;border-radius:50%;background:#243a5c;border:2px solid #8eeeff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.aimHandle::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;background:#dffaff;clip-path:polygon(0 0,100% 50%,0 100%,28% 50%);transform:translate(-50%,-50%) rotate(var(--arrow-rot,0deg));transform-origin:50% 50%}
+.aimArrowSvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.aimArrowLine{stroke:var(--cyan);stroke-width:5;stroke-linecap:round}
 canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-height:760px;aspect-ratio:9/16;border-radius:10px;background:#091323;touch-action:none}
 .controls{padding:10px}.section{padding:7px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}
 .head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.head b{font-size:14px}.angleVal{font-size:23px;font-weight:800;color:var(--cyan)}
@@ -66,8 +65,7 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
  .stageBox{height:min(30dvh,305px);min-height:0;flex:none;padding:3px}
  .aimPad{left:80%;right:auto;width:138px;height:205px}
  .aimGuide{height:148px}
- .aimHandle{width:23px;height:23px}
- canvas{height:100%;width:auto;max-width:100%;max-height:none}
+  canvas{height:100%;width:auto;max-width:100%;max-height:none}
  .historyControls{padding-top:1px}
  .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
  .legend{font-size:10px;gap:7px;padding-top:4px;padding-bottom:2px;line-height:1}
@@ -95,8 +93,14 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
       <div id="aimPad" class="aimPad" aria-label="引っ張って打ち出し方向を調整">
         <div class="aimGuide"></div>
         <div class="aimCenter"></div>
-        <div id="aimLine" class="aimLine"></div>
-        <div id="aimHandle" class="aimHandle"></div>
+        <svg id="aimArrowSvg" class="aimArrowSvg" aria-hidden="true">
+          <defs>
+            <marker id="aimArrowHead" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#86E8FF"></path>
+            </marker>
+          </defs>
+          <line id="aimArrowLine" class="aimArrowLine" x1="0" y1="0" x2="0" y2="0" marker-end="url(#aimArrowHead)"></line>
+        </svg>
       </div>
     </div>
     <div class="legend">
@@ -321,8 +325,7 @@ function draw(){
 // Right-side pull-to-aim control.
 // Like Monster Strike: drag/pull in one direction, launch direction is the opposite.
 const aimPad=document.getElementById('aimPad');
-const aimHandle=document.getElementById('aimHandle');
-const aimLine=document.getElementById('aimLine');
+const aimArrowLine=document.getElementById('aimArrowLine');
 let aimDragging=false;
 
 function aimGeometryFromLaunch(launchDeg){
@@ -361,23 +364,21 @@ function aimGeometryFromLaunch(launchDeg){
 }
 
 function syncAimPad(){
-  if(!aimPad || !aimHandle || !aimLine) return;
+  if(!aimPad || !aimArrowLine) return;
   const geo=aimGeometryFromLaunch(+E.a.value);
   if(!geo) return;
 
-  aimHandle.style.left=(geo.cx+geo.dx)+'px';
-  aimHandle.style.top=(geo.cy+geo.dy)+'px';
+  // Draw one integrated arrow in the LAUNCH direction.
+  // geo.dx / geo.dy are the pull-direction components, so launch is the opposite.
+  const x1=geo.cx;
+  const y1=geo.cy;
+  const x2=geo.cx-geo.dx;
+  const y2=geo.cy-geo.dy;
 
-  aimLine.style.left=geo.cx+'px';
-  aimLine.style.top=geo.cy+'px';
-  aimLine.style.width=geo.length+'px';
-
-  // The direction line points in the LAUNCH direction,
-  // which is opposite to the pull/drag direction.
-  aimLine.style.transform=`rotate(${Math.atan2(-geo.dy,-geo.dx)}rad)`;
-
-  // Chevron also points in the launch direction.
-  aimHandle.style.setProperty('--arrow-rot',`${Math.atan2(-geo.dy,-geo.dx)}rad`);
+  aimArrowLine.setAttribute('x1',x1);
+  aimArrowLine.setAttribute('y1',y1);
+  aimArrowLine.setAttribute('x2',x2);
+  aimArrowLine.setAttribute('y2',y2);
 }
 
 function aimFromPointer(ev){
