@@ -7,7 +7,7 @@
 <style>
 :root{--bg:#07101d;--panel:#111b2e;--line:#273956;--text:#eef5ff;--muted:#9fb0cc;--cyan:#6ee7ff;--yellow:#ffd166;--red:#ff7b7b}
 *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
-body{min-height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}.app{max-width:850px;margin:auto;padding:8px 10px calc(12px + env(safe-area-inset-bottom))}
+body{min-height:100dvh;overflow:hidden}.app{max-width:850px;margin:auto;padding:8px 10px calc(12px + env(safe-area-inset-bottom))}
 h1{font-size:18px;margin:3px 0 7px}.main{display:grid;grid-template-columns:minmax(250px,1fr) minmax(310px,.9fr);gap:10px}
 .stageBox,.controls{background:var(--panel);border:1px solid var(--line);border-radius:15px}
 .stageArea{min-width:0;display:flex;flex-direction:column;min-height:0}
@@ -28,17 +28,18 @@ canvas{display:block;width:auto;max-width:100%;height:min(76dvh,760px);max-heigh
 .stepBtn{min-height:30px;width:32px;padding:0;border-radius:8px;font-size:18px;line-height:1}.fineBtn{font-size:11px;font-weight:800}
 .cornerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.angleRow{grid-template-columns:38px 38px 44px minmax(80px,1fr) 54px 44px 38px 38px}.angleRow .stepBtn{width:100%;font-size:10px}
 button.corner{border-color:#7c5d3b;background:#3a2b1c}
-.loopPanel{margin-top:6px;padding:7px;border:1px solid #2e4667;border-radius:10px;background:#0d1829}
-.loopTitle{font-size:12px;font-weight:800;margin-bottom:5px}
+.loopPanel{margin-top:4px;padding:5px 6px;border:1px solid #2e4667;border-radius:10px;background:#0d1829}
+.loopTitle{font-size:11px;font-weight:800;margin-bottom:3px}
 .loopRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0}
+.loopCombinedRow{display:grid;grid-template-columns:auto minmax(118px,1fr) auto 112px;align-items:center;gap:6px;margin:3px 0}
 .loopLabel{font-size:11px;color:var(--muted)}
-.segmented{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:150px}
+.segmented{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:0}
 .segment,.dirBtn,.miniBtn{min-height:28px}
 .segment.active,.dirBtn.active{background:#16485a;border-color:#4da7bf}
-.nControl{display:grid;grid-template-columns:34px 44px 34px;align-items:center;gap:5px}
+.nControl{display:grid;grid-template-columns:32px 36px 32px;align-items:center;gap:4px}
 .nValue{text-align:center;font-weight:800;font-size:14px}
-.loopInfo{font-size:10px;color:#c8d6ec;background:#091323;border:1px solid #263a57;border-radius:8px;padding:5px 7px;margin-top:5px}
-.directionRow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}
+.loopInfo{font-size:9px;color:#c8d6ec;background:#091323;border:1px solid #263a57;border-radius:8px;padding:3px 6px;margin-top:3px}
+.directionRow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:3px}
 .positionRow{grid-template-columns:46px minmax(0,1fr) 64px}
 .reflectionSection .row{grid-template-columns:64px 32px minmax(0,1fr) 56px 32px}
 .positionRow input[type=range]{min-width:0}
@@ -51,19 +52,19 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
 .pills{display:flex;gap:5px}.pill{font-size:11px;background:#091323;border:1px solid var(--line);border-radius:999px;padding:4px 7px}
 .help{font-size:10px;color:var(--muted);margin:5px 0 0}
 @media(max-width:650px){
- .app{min-height:100dvh;height:auto;overflow:visible;padding:5px 7px calc(16px + env(safe-area-inset-bottom))}
- h1{font-size:15px;margin:0 0 1px}
- .main{height:auto;min-height:0;display:flex;flex-direction:column;gap:4px}
+ .app{height:100dvh;overflow:hidden;padding:4px 7px calc(4px + env(safe-area-inset-bottom))}
+ h1{font-size:15px;margin:0}
+ .main{height:calc(100dvh - 25px - env(safe-area-inset-bottom));min-height:0;display:flex;flex-direction:column;gap:3px}
 
  .stageArea{flex:0 0 auto;min-height:0}
- .stageBox{height:min(34dvh,340px);min-height:0;flex:none;padding:4px}
+ .stageBox{height:min(27dvh,275px);min-height:0;flex:none;padding:3px}
  canvas{height:100%;width:auto;max-width:100%;max-height:none}
- .historyControls{padding-top:2px}
+ .historyControls{padding-top:1px}
  .historyBtn{min-height:24px;padding:2px 8px;font-size:10px}
- .legend{font-size:10px;gap:7px;padding-top:0}
+ .legend{font-size:10px;gap:7px;padding-top:0;line-height:1}
  canvas{height:100%;width:auto;max-width:100%;max-height:none}
- .controls{flex:0 0 auto;padding:6px 8px;border-radius:12px}
- .section{padding:3px 0}.head b{font-size:12px}.angleVal{font-size:18px}
+ .controls{flex:0 0 auto;padding:5px 8px;border-radius:12px}
+ .section{padding:2px 0}.head b{font-size:12px}.angleVal{font-size:18px}
  .row{grid-template-columns:34px 29px 1fr 46px 29px;margin:2px 0;gap:3px}.row label{font-size:11px}
  .positionRow{grid-template-columns:28px minmax(0,1fr) 52px}
  .reflectionSection .row{grid-template-columns:52px 29px minmax(0,1fr) 46px 29px}
@@ -94,15 +95,13 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
       
       <div class="loopPanel">
         <div class="loopTitle">ループ軌道</div>
-        <div class="loopRow">
-          <span class="loopLabel">分割方向</span>
+        <div class="loopCombinedRow">
+          <span class="loopLabel">分割</span>
           <div class="segmented">
             <button id="loopH" class="segment active" data-loop-axis="H">H方向</button>
             <button id="loopW" class="segment" data-loop-axis="W">W方向</button>
           </div>
-        </div>
-        <div class="loopRow">
-          <span class="loopLabel">分割数 n</span>
+          <span class="loopLabel">n</span>
           <div class="nControl">
             <button id="nMinus" class="miniBtn">−</button>
             <span id="nValue" class="nValue">1</span>
