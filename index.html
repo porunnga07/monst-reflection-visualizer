@@ -95,8 +95,8 @@ button.diag{border-color:#397e8d;background:#123847}.diagNote{font-size:10px;col
         <div class="aimCenter"></div>
         <svg id="aimArrowSvg" class="aimArrowSvg" aria-hidden="true">
           <defs>
-            <marker id="aimArrowHead" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-              <path d="M0,0 L10,5 L0,10 Z" fill="#86E8FF"></path>
+            <marker id="aimArrowHead" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#86E8FF"></path>
             </marker>
           </defs>
           <line id="aimArrowLine" class="aimArrowLine" x1="0" y1="0" x2="0" y2="0" marker-end="url(#aimArrowHead)"></line>
@@ -370,10 +370,18 @@ function syncAimPad(){
 
   // Draw one integrated arrow in the LAUNCH direction.
   // geo.dx / geo.dy are the pull-direction components, so launch is the opposite.
+  // To avoid the shaft visually overlapping the arrowhead, stop the line at the
+  // base of the head instead of at the tip.
   const x1=geo.cx;
   const y1=geo.cy;
-  const x2=geo.cx-geo.dx;
-  const y2=geo.cy-geo.dy;
+  const xTip=geo.cx-geo.dx;
+  const yTip=geo.cy-geo.dy;
+  const len=Math.hypot(geo.dx,geo.dy) || 1;
+  const ux=(xTip-x1)/len;
+  const uy=(yTip-y1)/len;
+  const headLen=12; // matches the visual size of the SVG marker
+  const x2=xTip-ux*headLen;
+  const y2=yTip-uy*headLen;
 
   aimArrowLine.setAttribute('x1',x1);
   aimArrowLine.setAttribute('y1',y1);
